@@ -51,6 +51,10 @@ public class SimCard {
 
 // final JSONArray jsonArray = new JSONArray();
 
+    public boolean isSameNumber(SimCard simCard) {
+        return this.number.equals(simCard.number);
+    }
+
     JSONObject toJSON() {
         JSONObject json = new JSONObject();
         try {

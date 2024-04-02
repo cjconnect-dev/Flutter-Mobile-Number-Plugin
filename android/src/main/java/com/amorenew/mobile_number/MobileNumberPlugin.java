@@ -173,20 +173,33 @@ public class MobileNumberPlugin implements FlutterPlugin, ActivityAware, MethodC
         }
     }
 
-    @SuppressLint("HardwareIds")
+   @SuppressLint("HardwareIds")
     private void generateMobileNumber() {
         JSONArray simJsonArray = new JSONArray();
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP_MR1) {
+        SimCard simCardLineFirst = getSingleSimCard();
+        List<SimCard> simCardList = new ArrayList<>();
+
+        if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP_MR1) {
             for (SubscriptionInfo subscriptionInfo : getSubscriptions()) {
                 SimCard simCard = new SimCard(telephonyManager, subscriptionInfo);
-                simJsonArray.put(simCard.toJSON());
+
+                if (simCardLineFirst != null && simCardLineFirst.isSameNumber(simCard)) {
+                    simCardList.add(0, simCard);
+                } else {
+                    simCardList.add(simCard);
+                }
+                
             }
         }
-        if (simJsonArray.length()==0) {
-            SimCard simCard = getSingleSimCard();
-            if (simCard != null) {
-                simJsonArray.put(simCard.toJSON());
+
+        if (simCardList.size() == 0) {
+            if (simCardLineFirst != null) {
+                simCardList.add(simCardLineFirst);
             }
+        }
+
+        for (SimCard simCard : simCardList) {
+            simJsonArray.put(simCard.toJSON());
         }
 
         if (simJsonArray.toString().isEmpty()) {
@@ -194,6 +207,7 @@ public class MobileNumberPlugin implements FlutterPlugin, ActivityAware, MethodC
             result.error("UNAVAILABLE", "No phone number on sim card", null);
         } else result.success(simJsonArray.toString());
     }
+
 
 
     @SuppressLint("HardwareIds")
